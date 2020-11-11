@@ -1,8 +1,17 @@
 .cards__list {
   margin: 34px auto;
+  padding: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   grid-gap: 36px;
-  width: 1010px;
+}
+
+.list {
+  &__loader {
+    width: 100%;
+    height: 100%;
+    position: absolute !important;
+    top: 50%;
+  }
 }

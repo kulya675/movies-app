@@ -1,18 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
-import { Tag } from 'antd';
 
+import Genre from '../Genre';
 import './Card.scss';
+import poster from './poster.svg';
 
-const Card = ({ title, overview, release_date: releaseDate, poster_path: posterPath }) => {
-  const posterUrl = `https://image.tmdb.org/t/p/w500${posterPath}`;
-  const date = new Date(releaseDate);
+const Card = ({ title, overview, releaseDate, posterPath }) => {
+  let posterUrl = poster;
+  let date;
+
+  if (posterPath !== null) {
+    posterUrl = `https://image.tmdb.org/t/p/w500${posterPath}`;
+  }
+
+  try {
+    date = format(new Date(releaseDate), 'MMMM d, y');
+  } catch {
+    date = 'Unknow';
+  }
 
   const resultOverview = () => {
     let text = overview;
     let lastSpace = 0;
-    const symLimit = 240;
+    const symLimit = 210;
 
     if (text.length <= symLimit) return text;
 
@@ -31,9 +42,8 @@ const Card = ({ title, overview, release_date: releaseDate, poster_path: posterP
         </div>
         <div className="card__info info">
           <h5 className="info__title">{title}</h5>
-          <span className="info__date">{format(date, 'MMMM d, y')}</span>
-          <Tag className="info__genre">Action</Tag>
-          <Tag className="info__genre">Trash</Tag>
+          <span className="info__date">{date}</span>
+          <Genre className="info__genre" />
           <p className="info__overview">{resultOverview()}</p>
         </div>
       </div>
@@ -41,11 +51,16 @@ const Card = ({ title, overview, release_date: releaseDate, poster_path: posterP
   );
 };
 
+Card.defaultProps = {
+  releaseDate: undefined,
+  posterPath: undefined,
+};
+
 Card.propTypes = {
   title: PropTypes.string.isRequired,
   overview: PropTypes.string.isRequired,
-  release_date: PropTypes.string.isRequired,
-  poster_path: PropTypes.string.isRequired,
+  releaseDate: PropTypes.string,
+  posterPath: PropTypes.string,
 };
 
 export default Card;

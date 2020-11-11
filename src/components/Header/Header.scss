@@ -1,0 +1,14 @@
+.header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  &__filter {
+    color: transparent;
+    padding: 13px auto 19px auto;
+    height: 54px;
+  }
+  &__search {
+  }
+}

@@ -3,8 +3,8 @@ class TmdbService {
 
   API_KEY = '503aa50f19b9fe0264b5fb74042cc1f7';
 
-  async getResources(searchValue) {
-    const url = `${this.API_BASE_SEARCH}?api_key=${this.API_KEY}&query=${searchValue}`;
+  async getResources(searchValue, pageValue) {
+    const url = `${this.API_BASE_SEARCH}?api_key=${this.API_KEY}&query=${searchValue}&page=${pageValue}`;
     const result = await fetch(url);
 
     if (!result.ok) {
@@ -13,10 +13,25 @@ class TmdbService {
     return result.json();
   }
 
-  async getSearchResults(searchValue) {
-    const res = await this.getResources(searchValue);
-    return res.results;
+  async getSearchResults(searchValue, pageValue) {
+    const res = await this.getResources(searchValue, pageValue);
+    return res.results.map(this.transformSearchResults);
   }
+
+  async getTotalResults(searchValue) {
+    const res = await this.getResources(searchValue);
+    return res.total_results;
+  }
+
+  transformSearchResults = (result) => {
+    return {
+      id: result.id,
+      title: result.title,
+      overview: result.overview,
+      posterPath: result.poster_path,
+      releaseDate: result.release_date,
+    };
+  };
 }
 
 export default TmdbService;

@@ -15,3 +15,13 @@ body {
   font-size: 12px;
   background-color: #fff;
 }
+
+.cards__wrapper {
+  width: 1010px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  margin: 0 auto;
+}

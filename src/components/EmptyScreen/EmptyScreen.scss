@@ -1,0 +1,16 @@
+.screen--empty {
+  & .arrow {
+    transform: translate3d(0, -100%, 0);
+    animation: spin 0.9s infinite linear;
+  }
+}
+
+@keyframes spin {
+  0%,
+  100% {
+    transform: translate(0, 5%);
+  }
+  50% {
+    transform: translate(0, 30%);
+  }
+}

@@ -1,38 +1,43 @@
-import React, { Component } from 'react';
+/* eslint-disable react/forbid-prop-types */
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import TmdbService from '../../services/TmdbService';
+import { Spin } from 'antd';
 
 import Card from '../Card';
+import EmptyScreen from '../EmptyScreen';
+import ErrorScreen from '../ErrorScreen';
 import './CardList.scss';
 
-class CardList extends Component {
-  tmdbService = new TmdbService();
+const CardList = ({ moviesList, responseStatus, empty }) => {
+  const { loading, error } = responseStatus;
 
-  constructor() {
-    super();
-    this.getMovies();
-  }
+  const elements = moviesList.map((item) => {
+    const { id } = item;
+    return <Card key={id} {...item} />;
+  });
 
-  state = {
-    moviesList: [],
-  };
+  const dataIsHere = !loading || !error;
 
-  getMovies() {
-    this.tmdbService.getSearchResults('return').then((movies) => {
-      this.setState({
-        moviesList: movies,
-      });
-    });
-  }
+  const spinner = loading ? <Spin className="list__loader" size="large" /> : null;
+  const emptyScreen = empty ? <EmptyScreen /> : null;
+  const errorScreen = error ? <ErrorScreen /> : null;
+  const content = dataIsHere ? <ul className="cards__list list">{elements}</ul> : null;
 
-  render() {
-    const { moviesList } = this.state;
-    const elements = moviesList.map((item) => {
-      const { id } = item;
-      return <Card key={id} {...item} />;
-    });
-    return <ul className="cards__list list">{elements}</ul>;
-  }
-}
+  return (
+    <section className="cards__wrapper wrapper">
+      {emptyScreen}
+      {errorScreen}
+      {spinner}
+      {content}
+    </section>
+  );
+};
+
+CardList.propTypes = {
+  moviesList: PropTypes.array.isRequired,
+  responseStatus: PropTypes.object.isRequired,
+  empty: PropTypes.bool.isRequired,
+};
 
 export default CardList;
