@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable react/destructuring-assignment */
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { debounce } from 'lodash';
 
@@ -6,20 +7,43 @@ import { Input } from 'antd';
 
 import './SearchInput.scss';
 
-const SearchInput = ({ onSearch }) => {
-  const getMoviesDebounced = debounce((value) => {
-    onSearch(value);
-  }, 800);
-
-  const onInputSearch = (evt) => {
-    getMoviesDebounced(evt.target.value);
+class SearchInput extends Component {
+  state = {
+    value: '',
   };
 
-  return <Input placeholder="Type to search..." className="header__search search" onChange={onInputSearch} />;
-};
+  static propTypes = {
+    onSearch: PropTypes.func.isRequired,
+    searchValue: PropTypes.string.isRequired,
+  };
 
-SearchInput.propTypes = {
-  onSearch: PropTypes.func.isRequired,
-};
+  componentDidMount() {
+    this.setState({
+      value: this.props.searchValue,
+    });
+  }
+
+  getMoviesDebounced = debounce((value) => {
+    this.props.onSearch(value);
+  }, 800);
+
+  onInputSearch = (evt) => {
+    this.setState({
+      value: evt.target.value,
+    });
+    this.getMoviesDebounced(evt.target.value);
+  };
+
+  render() {
+    return (
+      <Input
+        className="header__search search"
+        placeholder="Type to search..."
+        value={this.state.value}
+        onChange={this.onInputSearch}
+      />
+    );
+  }
+}
 
 export default SearchInput;

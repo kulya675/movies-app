@@ -16,25 +16,37 @@
     }
   }
   &__info {
+    position: relative;
     padding: 10px 20px;
   }
 }
 
 .info {
+  display: flex;
+  flex-direction: column;
   & * {
-    margin-bottom: 7px;
+    margin-bottom: 6px;
   }
   &__title {
+    padding-right: 40px;
     font-weight: normal;
-    font-size: 17px;
+    font-size: 17px !important;
+  }
+  &__rating {
+    position: absolute;
+    top: 12px;
+    right: 9px;
   }
   &__date {
     display: block;
-    font-size: 11px;
+    font-size: 11px !important;
     color: rgba(0, 0, 0, 0.6);
   }
   &__genre {
     display: block;
     margin-bottom: 7px !important;
+  }
+  &__overview {
+    font-size: 12px !important;
   }
 }

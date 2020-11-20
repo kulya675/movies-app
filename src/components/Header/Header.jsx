@@ -7,7 +7,6 @@ import './Header.scss';
 const Header = ({ onSearch, searchValue }) => {
   return (
     <header className="header">
-      <div className="header__filter">I AM FILTER</div>
       <SearchInput onSearch={onSearch} searchValue={searchValue} />
     </header>
   );
@@ -15,7 +14,7 @@ const Header = ({ onSearch, searchValue }) => {
 
 Header.defaultProps = {
   onSearch: () => {},
-  searchValue: null,
+  searchValue: '',
 };
 
 Header.propTypes = {

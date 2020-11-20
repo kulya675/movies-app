@@ -3,10 +3,9 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import TmdbService from '../../services/TmdbService';
+import { GenreProvider } from '../GenreContext';
 
-import Header from '../Header';
-import CardList from '../CardList';
-import Footer from '../Footer';
+import Tab from '../Tab';
 
 import './App.scss';
 
@@ -14,23 +13,39 @@ class App extends Component {
   tmdbService = new TmdbService();
 
   state = {
-    moviesList: [],
+    currentTab: 'search',
+    searchList: [],
+    ratedList: [],
     empty: true,
     currentPage: 1,
-    searchValue: null,
+    searchValue: '',
     responseStatus: {
       loading: false,
       error: false,
     },
   };
 
+  componentDidMount() {
+    if (!this.tmdbService.getCookieSessionId()) {
+      this.tmdbService.createGuestSession();
+    }
+
+    this.getGenresList();
+
+    this.getRatedList();
+  }
+
   componentDidUpdate(prevProps, prevState) {
-    const { currentPage, searchValue } = this.state;
+    const { currentTab, currentPage, searchValue } = this.state;
     if (currentPage !== prevState.currentPage) {
       this.getMovies(searchValue, currentPage);
     }
+
     if (searchValue !== prevState.searchValue) {
       this.onChangeCurrentPage(1);
+    }
+    if (currentTab !== prevState.currentTab) {
+      this.getRatedList();
     }
   }
 
@@ -44,9 +59,8 @@ class App extends Component {
   };
 
   getMovies = (searchValue, pageCounter) => {
-    // const { moviesList: list } = this.state;
     if (!searchValue) {
-      this.setState({ moviesList: [], empty: true });
+      this.setState({ searchList: [], empty: true });
       return;
     }
 
@@ -55,9 +69,11 @@ class App extends Component {
     this.tmdbService
       .getSearchResults(searchValue, pageCounter)
       .then((moviesList) => {
+        const listWRating = moviesList.map(this.getMoviesRating);
+
         if (moviesList.length === 0) {
-          console.log(moviesList);
           this.setState(() => ({
+            searchList: [],
             searchValue,
             empty: true,
             responseStatus: { loading: false },
@@ -67,7 +83,7 @@ class App extends Component {
 
         this.setState({
           searchValue,
-          moviesList,
+          searchList: listWRating,
           empty: false,
           responseStatus: {
             loading: false,
@@ -77,25 +93,106 @@ class App extends Component {
       .catch(this.onError);
   };
 
+  getMoviesRating = (movie) => {
+    const { ratedList } = this.state;
+    const newMovie = { ...movie };
+    ratedList.forEach((ratedMovie) => {
+      if (movie.id === ratedMovie.id) {
+        newMovie.rating = ratedMovie.rating;
+      }
+    });
+    return newMovie;
+  };
+
+  getRatedList = () => {
+    this.setState({ responseStatus: { loading: true } });
+
+    this.tmdbService
+      .getRatedMovies()
+      .then((ratedList) => {
+        this.setState(() => {
+          return { ratedList, responseStatus: { loading: false } };
+        });
+      })
+      .catch(() => {
+        return '';
+      });
+  };
+
+  getGenresList = () => {
+    this.tmdbService.getGenres().then(({ genres }) => {
+      this.setState(() => {
+        return {
+          genres,
+        };
+      });
+    });
+  };
+
+  changeRating = (arr, id, value) => {
+    const newArr = arr.map((elem) => {
+      const newElem = { ...elem };
+      if (id === elem.id) {
+        newElem.rating = value;
+        return newElem;
+      }
+      return elem;
+    });
+    return newArr;
+  };
+
+  onRateMovie = (movieId, rateValue) => {
+    const { searchList, ratedList, currentTab } = this.state;
+    if (currentTab === 'search') {
+      this.setState(() => {
+        return { searchList: this.changeRating(searchList, movieId, rateValue) };
+      });
+    } else {
+      this.setState(() => {
+        return { ratedList: this.changeRating(ratedList, movieId, rateValue) };
+      });
+    }
+    this.tmdbService.rateMovie(movieId, rateValue);
+  };
+
+  onTabChange = (value) => {
+    this.setState({ currentTab: value });
+  };
+
   onChangeCurrentPage = (value) => {
+    window.scrollTo(0, 0);
     this.setState(() => {
       return { currentPage: value };
     });
   };
 
   render() {
-    const { moviesList, responseStatus, empty, searchValue, currentPage } = this.state;
+    const { currentTab, searchList, ratedList, genres, responseStatus, empty, searchValue, currentPage } = this.state;
 
-    const footer = !empty ? (
-      <Footer currentPage={currentPage} searchValue={searchValue} onChangeCurrentPage={this.onChangeCurrentPage} />
-    ) : null;
+    let spinnerStyle;
+    if (responseStatus.loading) {
+      spinnerStyle = { overflow: 'hidden' };
+    }
+
+    const list = currentTab === 'search' ? searchList : ratedList;
 
     return (
-      <>
-        <Header onSearch={this.getMovies} searchValue={searchValue} />
-        <CardList moviesList={moviesList} responseStatus={responseStatus} empty={empty} />
-        {footer}
-      </>
+      <section className="app" style={spinnerStyle}>
+        <GenreProvider value={genres}>
+          <Tab
+            list={list}
+            responseStatus={responseStatus}
+            empty={empty}
+            searchValue={searchValue}
+            currentPage={currentPage}
+            onChangeCurrentPage={this.onChangeCurrentPage}
+            getMovies={this.getMovies}
+            onTabChange={this.onTabChange}
+            currentTab={currentTab}
+            onRateMovie={this.onRateMovie}
+          />
+        </GenreProvider>
+      </section>
     );
   }
 }
